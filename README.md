@@ -42,15 +42,18 @@ kubectl apply -f postgres.yaml
 (Wait until the cluster pods are fully ready)
 
 ### 4. Verify the Backup Mechanism
-Once the primary database pod (e.g., prod-db-0) is running, you can manually trigger a WAL segment switch to force an immediate backup to MinIO:
-```bash
-kubectl exec -it prod-db-0 -- su postgres -c "psql -c 'SELECT pg_switch_wal();'"
-```
-To verify that the backup files have been uploaded:
+Note: Before triggering the first backup, ensure the S3 bucket is created:
 1. Establish a port-forwarding session to the MinIO UI:
 ```bash
 kubectl port-forward svc/minio-service 9001:9001
 ```
 2. Open your browser and go to: http://localhost:9001.
 3. Log in using credentials defined in `minio-secret.yaml`.
-4. Inspect the `postgres-backups` bucket. There should be a directory `spilo/` with created backup.
+4. Create a bucket named `postgres-backups`.
+Once the bucket is created and primary database pod (e.g., prod-db-0) is running, you can manually trigger a WAL segment switch to force an immediate backup to MinIO:
+```bash
+kubectl exec -it prod-db-0 -- su postgres -c "psql -c 'SELECT pg_switch_wal();'"
+```
+To verify that the backup files have been uploaded:
+5. Inspect the `postgres-backups` bucket. There should be a directory `spilo/` with created backup.
+<img width="1412" height="517" alt="image" src="https://github.com/user-attachments/assets/0991d383-93ad-4560-974e-ba92a23122ae" />
