@@ -1,0 +1,46 @@
+apiVersion: acid.zalan.do/v1
+kind: postgresql
+metadata:
+  name: prod-db
+  labels:
+    environment: production
+spec:
+  teamId: "devops"
+  # HA
+  numberOfInstances: 3
+  postgresql:
+    version: "15"
+  # PVC will be created automatically by operator
+  volume:
+    size: 1Gi
+  # Creating users and dbs
+  # Operator will generate passwords and store them as Secrets
+  users:
+    admin:
+      - superuser
+      - createdb
+  databases:
+    prod_db: admin
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  # WAL-G configuration injected directly to pods
+  env:
+    - name: WALE_S3_ENDPOINT
+      value: "http+path://minio-service:9000"
+    - name: AWS_REGION
+      value: "us-east-1"
+    - name: WAL_S3_BUCKET
+      value: "postgres-backups"
+    - name: AWS_S3_FORCE_PATH_STYLE
+      value: "true"
+    - name: USE_WALG_BACKUP
+      value: "true"
+    - name: USE_WALG_RESTORE
+      value: "true"
+    - name: WALG_DISABLE_S3_SSE
+      value: "true"

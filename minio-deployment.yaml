@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: minio
+  name: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+      - image: minio/minio
+        name: minio
+        command: ["minio"]
+        args: ["server", "/data", "--console-address", ":9001"]
+        ports:
+        - containerPort: 9000 # api
+        - containerPort: 9001 # gui
+        env:
+        - name: MINIO_ROOT_USER
+          valueFrom:
+            secretKeyRef:
+              key: MINIO_ROOT_USER
+              name: secret-minio-credentials
+        - name: MINIO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: MINIO_ROOT_PASSWORD
+              name: secret-minio-credentials
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
